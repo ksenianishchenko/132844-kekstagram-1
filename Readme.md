@@ -1,7 +1,7 @@
 # Личный проект «Кекстаграм» [![Build status][travis-image]][travis-url]
 
 * Студент: [Kseniia Anishchenko](https://up.htmlacademy.ru/javascript/10/user/132844).
-* Наставник: `Неизвестно`.
+* Наставник: ` Без наставника `.
 
 ---
 
