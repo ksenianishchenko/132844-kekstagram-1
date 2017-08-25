@@ -37,12 +37,37 @@ var pictureTemplate = document.querySelector('#picture-template').content;
 var picturesContainer = document.querySelector('.pictures');
 var uploadOverlay = document.querySelector('.upload-overlay');
 var galleryOverlay = document.querySelector('.gallery-overlay');
+var galleryOverlayClose = document.querySelector('.gallery-overlay-close');
 
-var renderPictures = function (picture) {
+var onElementPress = function (evt) {
+  if (evt.keyCode === 13) {
+    onPictureClickHandler();
+  } else if (evt.keyCode === 27) {
+    closePictureOverlay();
+  }
+};
+
+var closePictureOverlay = function () {
+  galleryOverlay.classList.add('hidden');
+  document.removeEventListener('keydown', onElementPress);
+};
+
+var onPictureClickHandler = function (currentPicture) {
+  var currentTarget = currentPicture.currentTarget;
+  currentPicture.preventDefault();
+  galleryOverlay.classList.remove('hidden');
+  galleryOverlay.querySelector('.gallery-overlay-image').src = currentTarget.getElementsByTagName('img')[0].src;
+  galleryOverlay.querySelector('.likes-count').textContent = currentTarget.querySelector('.picture-likes').textContent;
+  galleryOverlay.querySelector('.comments-count').textContent = currentTarget.querySelector('.picture-comments').textContent;
+};
+
+var renderPictures = function (element) {
   var pictureElement = pictureTemplate.cloneNode(true).children[0];
-  pictureElement.getElementsByTagName('img')[0].src = picture.url;
-  pictureElement.querySelector('.picture-likes').textContent = picture.likes;
-  pictureElement.querySelector('.picture-comments').textContent = picture.comments.length;
+  pictureElement.getElementsByTagName('img')[0].src = element.url;
+  pictureElement.querySelector('.picture-likes').textContent = element.likes;
+  pictureElement.querySelector('.picture-comments').textContent = element.comments.length;
+  pictureElement.addEventListener('click', onPictureClickHandler);
+  pictureElement.addEventListener('keydown', onElementPress);
   return pictureElement;
 };
 
@@ -52,8 +77,15 @@ for (var i = 0; i < pictures.length; i++) {
   fragment.appendChild(renderPictures(pictures[i]));
 }
 picturesContainer.appendChild(fragment);
+
 uploadOverlay.classList.add('hidden');
-galleryOverlay.classList.remove('hidden');
-galleryOverlay.querySelector('.gallery-overlay-image').src = pictures[0].url;
-galleryOverlay.querySelector('.likes-count').textContent = pictures[0].likes;
-galleryOverlay.querySelector('.comments-count').textContent = pictures[0].comments.length;
+
+galleryOverlayClose.addEventListener('click', function () {
+  galleryOverlay.classList.add('hidden');
+});
+
+galleryOverlayClose.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === 13) {
+    closePictureOverlay();
+  }
+});
