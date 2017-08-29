@@ -38,11 +38,26 @@ var picturesContainer = document.querySelector('.pictures');
 var uploadOverlay = document.querySelector('.upload-overlay');
 var galleryOverlay = document.querySelector('.gallery-overlay');
 var galleryOverlayClose = document.querySelector('.gallery-overlay-close');
+var uploadImageForm = document.querySelector('.upload-image');
+var uploadFormCancel = document.querySelector('.upload-form-cancel');
+var uploadFile = document.querySelector('#upload-file');
+var uploadForm = document.querySelector('.upload-form');
+var uploadRormSubmit = document.querySelector('.upload-form-submit');
+var uploadEffect = document.querySelectorAll('input[name=effect]');
+var effectImagePreview = document.querySelector('.effect-image-preview');
+var uploadResizeControlButtonDec = document.querySelector('.upload-resize-controls-button-dec');
+var uploadResizeControlButtonInc = document.querySelector('.upload-resize-controls-button-inc');
+var uploadResizeControlValue = document.querySelector('.upload-resize-controls-value');
+var uploadResizeControlValueDef = 100;
+var uploadFormHashtags = document.querySelector('.upload-form-hashtags');
+var uploadFormDescription = document.querySelector('.upload-form-description');
+var ESC_KEYCODE = 27;
+var ESC_ENTER = 13;
 
 var onElementPress = function (evt) {
-  if (evt.keyCode === 13) {
+  if (evt.keyCode === ESC_ENTER) {
     onPictureClickHandler();
-  } else if (evt.keyCode === 27) {
+  } else if (evt.keyCode === ESC_KEYCODE) {
     closePictureOverlay();
   }
 };
@@ -85,7 +100,103 @@ galleryOverlayClose.addEventListener('click', function () {
 });
 
 galleryOverlayClose.addEventListener('keydown', function (evt) {
-  if (evt.keyCode === 13) {
+  if (evt.keyCode === ESC_ENTER) {
     closePictureOverlay();
+  }
+});
+
+uploadFile.addEventListener('click', function () {
+  uploadOverlay.classList.remove('hidden');
+  uploadImageForm.classList.add('hidden');
+});
+
+uploadFormCancel.addEventListener('click', function () {
+  uploadOverlay.classList.add('hidden');
+  uploadImageForm.classList.remove('hidden');
+});
+
+document.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ESC_KEYCODE) {
+    uploadOverlay.classList.add('hidden');
+    uploadImageForm.classList.remove('hidden');
+  }
+});
+
+uploadFormCancel.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ESC_ENTER) {
+    uploadOverlay.classList.add('hidden');
+    uploadImageForm.classList.remove('hidden');
+  }
+});
+
+uploadRormSubmit.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ESC_ENTER) {
+    uploadForm.submit();
+  }
+});
+
+var onFilterEffectChange = function (evt) {
+  var chackedFilter = evt.target.value;
+  if (effectImagePreview.classList.length > 1) {
+    effectImagePreview.classList.remove(effectImagePreview.classList[effectImagePreview.classList.length - 1]);
+  }
+
+  effectImagePreview.classList.add('effect-' + chackedFilter);
+};
+
+for (var effect = 0; effect < uploadEffect.length; effect++) {
+  uploadEffect[effect].addEventListener('change', onFilterEffectChange);
+}
+
+var uploadResizeNewValue = function () {
+  var newValue = uploadResizeControlValueDef + '%';
+  uploadResizeControlValue.value = newValue;
+  effectImagePreview.style.transform = 'scale(0.' + uploadResizeControlValueDef + ')';
+  if (uploadResizeControlValueDef === 100) {
+    effectImagePreview.style.transform = 'scale(1)';
+  }
+};
+
+uploadResizeControlButtonDec.addEventListener('click', function () {
+  if (uploadResizeControlValueDef > 25) {
+    uploadResizeControlValueDef -= 25;
+    uploadResizeNewValue();
+  }
+});
+
+uploadResizeControlButtonInc.addEventListener('click', function () {
+  if (uploadResizeControlValueDef < 100) {
+    uploadResizeControlValueDef += 25;
+    uploadResizeNewValue();
+  }
+});
+
+uploadFormHashtags.addEventListener('invalid', function (evt) {
+  uploadFormHashtags.style.border = 'none;';
+  if (!uploadFormHashtags.validity.valid) {
+    uploadFormHashtags.style.border = '2px solid red';
+    if (uploadFormHashtags.validity.patternMismatch) {
+      uploadFormHashtags.setCustomValidity('хэш-тег начинается с символа `#` (решётка) и состоит из одного слова, нельзя указать больше пяти хэш-тегов, максимальная длина одного хэш-тега 20 символов');
+    } else if (uploadFormHashtags.validity.rangeOverflow) {
+      uploadFormHashtags.setCustomValidity('нельзя указать больше пяти хэш-тегов');
+    }
+  } else {
+    uploadFormHashtags.setCustomValidity('');
+  }
+});
+
+uploadFormDescription.addEventListener('invalid', function () {
+  uploadFormDescription.style.border = 'none';
+  if (!uploadFormDescription.validity.valid) {
+    uploadFormDescription.style.border = '2px solid red';
+  } else {
+    uploadFormDescription.setCustomValidity('');
+  }
+});
+
+uploadForm.addEventListener('submit', function (evt) {
+  evt.preventDefault();
+  if (uploadFormHashtags.validity.valid && uploadFormDescription.validity.valid) {
+    uploadForm.submit();
   }
 });
