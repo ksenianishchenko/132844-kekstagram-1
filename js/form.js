@@ -5,18 +5,29 @@
   var uploadFile = document.querySelector('#upload-file');
   var uploadForm = document.querySelector('.upload-form');
   var uploadRormSubmitButton = document.querySelector('.upload-form-submit');
-  var uploadEffect = document.querySelectorAll('input[name=effect]');
   var effectImagePreview = document.querySelector('.effect-image-preview');
-  var uploadResizeControlButtonDec = document.querySelector('.upload-resize-controls-button-dec');
-  var uploadResizeControlButtonInc = document.querySelector('.upload-resize-controls-button-inc');
-  var uploadResizeControlValue = document.querySelector('.upload-resize-controls-value');
   var uploadFormHashtags = document.querySelector('.upload-form-hashtags');
   var uploadFormDescription = document.querySelector('.upload-form-description');
-  var uploadResizeControlValueDef = 100;
   var uploadEffectLevelLine = document.querySelector('.upload-effect-level-line');
   var uploadEffectLevelPin = uploadEffectLevelLine.querySelector('.upload-effect-level-pin');
   var uploadEffectLevelVal = uploadEffectLevelLine.querySelector('.upload-effect-level-val');
   var uploadEffectLevel = document.querySelector('.upload-effect-level');
+  var uploadResizeControlButtonDec = document.querySelector('.upload-resize-controls-button-dec');
+  var uploadResizeControlButtonInc = document.querySelector('.upload-resize-controls-button-inc');
+  var uploadResizeControlValue = document.querySelector('.upload-resize-controls-value');
+  var uploadEffect = document.querySelectorAll('input[name=effect]');
+  var chackedFilter;
+
+  var filters = {
+    none: {filterId: 'none'},
+    chrome: {filterId: 'grayscale', factor: 1, type: ''},
+    sepia: {filterId: 'sepia', factor: 1, type: ''},
+    marvin: {filterId: 'invert', factor: 100, type: '%'},
+    phobos: {filterId: 'blur', factor: 3, type: 'px'},
+    heat: {filterId: 'brightness', factor: 3, type: ''}
+  };
+
+  effectImagePreview = document.querySelector('.effect-image-preview');
 
   uploadFile.addEventListener('click', function () {
     window.util.uploadOverlayClassRemove();
@@ -34,62 +45,6 @@
 
   uploadRormSubmitButton.addEventListener('keydown', function (evt) {
     window.util.onEnterPress(evt, uploadFormSubmit);
-  });
-
-  uploadEffectLevel.classList.add('hidden');
-  var chackedFilter;
-
-  var onFilterEffectChange = function (evt) {
-    chackedFilter = evt.target.value;
-    if (effectImagePreview.classList.length > 1) {
-      effectImagePreview.classList.remove(effectImagePreview.classList[effectImagePreview.classList.length - 1]);
-      document.removeEventListener('mousedown', OnMousePress);
-    }
-    if (chackedFilter !== 'none') {
-      uploadEffectLevelPin.style.left = '100%';
-      uploadEffectLevelVal.style.width = '100%';
-      if (chackedFilter === 'chrome') {
-        effectImagePreview.style.filter = 'grayscale(1)';
-      } else if (chackedFilter === 'sepia') {
-        effectImagePreview.style.filter = 'sepia(1)';
-      } else if (chackedFilter === 'marvin') {
-        effectImagePreview.style.filter = 'invert(100%)';
-      } else if (chackedFilter === 'phobos') {
-        effectImagePreview.style.filter = 'blur(3px)';
-      } else if (chackedFilter === 'heat') {
-        effectImagePreview.style.filter = 'brightness(3)';
-      }
-      uploadEffectLevel.classList.remove('hidden');
-      uploadEffectLevelPin.addEventListener('mousedown', OnMousePress);
-    }
-    effectImagePreview.classList.add('effect-' + chackedFilter);
-  };
-
-  for (var effect = 0; effect < uploadEffect.length; effect++) {
-    uploadEffect[effect].addEventListener('change', onFilterEffectChange);
-  }
-
-  var uploadResizeNewValue = function () {
-    var newValue = uploadResizeControlValueDef + '%';
-    uploadResizeControlValue.value = newValue;
-    effectImagePreview.style.transform = 'scale(0.' + uploadResizeControlValueDef + ')';
-    if (uploadResizeControlValueDef === 100) {
-      effectImagePreview.style.transform = 'scale(1)';
-    }
-  };
-
-  uploadResizeControlButtonDec.addEventListener('click', function () {
-    if (uploadResizeControlValueDef > 25) {
-      uploadResizeControlValueDef -= 25;
-      uploadResizeNewValue();
-    }
-  });
-
-  uploadResizeControlButtonInc.addEventListener('click', function () {
-    if (uploadResizeControlValueDef < 100) {
-      uploadResizeControlValueDef += 25;
-      uploadResizeNewValue();
-    }
   });
 
   uploadFormHashtags.addEventListener('invalid', function (evt) {
@@ -120,7 +75,38 @@
     }
   });
 
-  var OnMousePress = function (evt) {
+  uploadEffectLevel.classList.add('hidden');
+
+  var filterDefault = function (filterDefaultName, element) {
+    var filterDefaultChacked = filters[filterDefaultName];
+    if (filterDefaultName === 'none') {
+      element.style.filter = filterDefaultChacked.filterId;
+    } else {
+      element.style.filter = filterDefaultChacked.filterId + '(' + filterDefaultChacked.factor + filterDefaultChacked.type + ')';
+    }
+  };
+
+  var applyFilter = function (element, filter) {
+    chackedFilter = filter;
+    element.classList.add('effect-' + chackedFilter);
+    uploadEffectLevelPin.style.left = '100%';
+    uploadEffectLevelVal.style.width = '100%';
+    filterDefault(chackedFilter, effectImagePreview);
+    uploadEffectLevel.classList.add('hidden');
+    if (chackedFilter !== 'none') {
+      uploadEffectLevel.classList.remove('hidden');
+      uploadEffectLevelPin.addEventListener('mousedown', onMousePress);
+    }
+  };
+
+  for (var effect = 0; effect < uploadEffect.length; effect++) {
+    uploadEffect[effect].addEventListener('change', function (evt) {
+      window.initializeFilters(evt, effectImagePreview, applyFilter);
+      document.removeEventListener('mousedown', onMousePress);
+    });
+  }
+
+  var onMousePress = function (evt) {
     var effectLineCoord = getCoords(uploadEffectLevelLine);
     var rigthRange = effectLineCoord.left + uploadEffectLevelLine.offsetWidth;
     var startLeftCoord = evt.clientX;
@@ -137,17 +123,12 @@
       startLeftCoord = moveEvt.clientX;
       uploadEffectLevelPin.style.left = (uploadEffectLevelPin.offsetLeft - ShiftX) + 'px';
       uploadEffectLevelVal.style.width = (uploadEffectLevelVal.offsetWidth - ShiftX) + 'px';
-      if (chackedFilter === 'chrome') {
-        effectImagePreview.style.filter = 'grayscale(' + (uploadEffectLevelVal.offsetWidth - ShiftX) / uploadEffectLevelLine.offsetWidth + ')';
-      } else if (chackedFilter === 'sepia') {
-        effectImagePreview.style.filter = 'sepia(' + (uploadEffectLevelVal.offsetWidth - ShiftX) / uploadEffectLevelLine.offsetWidth + ')';
-      } else if (chackedFilter === 'marvin') {
-        effectImagePreview.style.filter = 'invert(' + ((uploadEffectLevelVal.offsetWidth - ShiftX)) * 100 / uploadEffectLevelLine.offsetWidth + '%)';
-      } else if (chackedFilter === 'phobos') {
-        effectImagePreview.style.filter = 'blur(' + ((uploadEffectLevelVal.offsetWidth - ShiftX)) * 3 / uploadEffectLevelLine.offsetWidth + 'px)';
-      } else if (chackedFilter === 'heat') {
-        effectImagePreview.style.filter = 'brightness(' + ((uploadEffectLevelVal.offsetWidth - ShiftX)) * 3 / uploadEffectLevelLine.offsetWidth + ')';
-      }
+      addFilter(chackedFilter, effectImagePreview, uploadEffectLevelVal, uploadEffectLevelLine, ShiftX);
+    };
+
+    var addFilter = function (filterName, target, effectLevelElement, effectLineElement, shiftX) {
+      var filter = filters[filterName];
+      target.style.filter = filter.filterId + '(' + ((effectLevelElement.offsetWidth - shiftX)) * filter.factor / effectLineElement.offsetWidth + filter.type + ')';
     };
 
     var onMouseUp = function (upEvt) {
@@ -166,4 +147,16 @@
       };
     }
   };
+
+  var adjustScale = function (element, scale) {
+    element.style.transform = 'scale(' + scale + ')';
+  };
+
+  uploadResizeControlButtonDec.addEventListener('click', function () {
+    window.initializeScale(uploadResizeControlValue, effectImagePreview, -25, adjustScale);
+  });
+
+  uploadResizeControlButtonInc.addEventListener('click', function () {
+    window.initializeScale(uploadResizeControlValue, effectImagePreview, +25, adjustScale);
+  });
 })();
