@@ -16,6 +16,7 @@
   var uploadResizeControlButtonInc = document.querySelector('.upload-resize-controls-button-inc');
   var uploadResizeControlValue = document.querySelector('.upload-resize-controls-value');
   var uploadEffect = document.querySelectorAll('input[name=effect]');
+  var uploadImage = document.querySelector('.upload-image');
   var chackedFilter;
 
   var filters = {
@@ -69,10 +70,11 @@
   });
 
   uploadForm.addEventListener('submit', function (evt) {
+    window.backend.save(new FormData(uploadForm), function () {
+      window.uploadOverlay.classList.add('hidden');
+      uploadImage.classList.remove('hidden');
+    }, window.onPicturesErrorLoad);
     evt.preventDefault();
-    if (uploadFormHashtags.validity.valid && uploadFormDescription.validity.valid) {
-      uploadForm.submit();
-    }
   });
 
   uploadEffectLevel.classList.add('hidden');
