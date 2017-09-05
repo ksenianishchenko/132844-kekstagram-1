@@ -1,7 +1,7 @@
 'use strict';
 
 (function () {
-  var uploadOverlay = document.querySelector('.upload-overlay');
+  window.uploadOverlay = document.querySelector('.upload-overlay');
   var galleryOverlayClose = document.querySelector('.gallery-overlay-close');
   var uploadImageForm = document.querySelector('.upload-image');
 
@@ -10,7 +10,7 @@
     document.removeEventListener('keydown', window.util.onElementPress);
   };
 
-  uploadOverlay.classList.add('hidden');
+  window.uploadOverlay.classList.add('hidden');
 
 
   galleryOverlayClose.addEventListener('click', function () {
@@ -48,11 +48,11 @@
         }
       },
       uploadOverlayClassAdd: function () {
-        uploadOverlay.classList.add('hidden');
+        window.uploadOverlay.classList.add('hidden');
         uploadImageForm.classList.remove('hidden');
       },
       uploadOverlayClassRemove: function () {
-        uploadOverlay.classList.remove('hidden');
+        window.uploadOverlay.classList.remove('hidden');
         uploadImageForm.classList.add('hidden');
       }
     };
