@@ -17,6 +17,7 @@
   var uploadResizeControlValue = document.querySelector('.upload-resize-controls-value');
   var uploadEffect = document.querySelectorAll('input[name=effect]');
   var uploadImage = document.querySelector('.upload-image');
+  var formFilters = document.querySelector('.filters');
   var chackedFilter;
 
   var filters = {
@@ -75,6 +76,7 @@
       uploadImage.classList.remove('hidden');
     }, window.onPicturesErrorLoad);
     evt.preventDefault();
+    uploadForm.reset();
   });
 
   uploadEffectLevel.classList.add('hidden');
@@ -161,4 +163,6 @@
   uploadResizeControlButtonInc.addEventListener('click', function () {
     window.initializeScale(uploadResizeControlValue, effectImagePreview, +25, adjustScale);
   });
+
+  formFilters.classList.remove('hidden');
 })();
