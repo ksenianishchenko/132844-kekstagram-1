@@ -15,7 +15,7 @@
   var uploadResizeControlButtonDec = document.querySelector('.upload-resize-controls-button-dec');
   var uploadResizeControlButtonInc = document.querySelector('.upload-resize-controls-button-inc');
   var uploadResizeControlValue = document.querySelector('.upload-resize-controls-value');
-  var uploadEffect = document.querySelectorAll('input[name=effect]');
+  var uploadEffectInputs = document.querySelectorAll('input[name=effect]');
   var uploadImage = document.querySelector('.upload-image');
   var formFilters = document.querySelector('.filters');
   var chackedFilter;
@@ -43,12 +43,6 @@
     window.util.onEnterPress(evt, window.util.uploadOverlayClassAdd);
   });
 
-  var uploadFormSubmit = uploadForm.submit;
-
-  uploadRormSubmitButton.addEventListener('keydown', function (evt) {
-    window.util.onEnterPress(evt, uploadFormSubmit);
-  });
-
   uploadFormHashtags.addEventListener('invalid', function (evt) {
     uploadFormHashtags.setCustomValidity('');
     uploadFormHashtags.style.border = 'none';
@@ -72,11 +66,18 @@
 
   uploadForm.addEventListener('submit', function (evt) {
     window.backend.save(new FormData(uploadForm), function () {
-      window.uploadOverlay.classList.add('hidden');
+      window.util.uploadOverlayHide();
       uploadImage.classList.remove('hidden');
     }, window.onPicturesErrorLoad);
     evt.preventDefault();
     uploadForm.reset();
+  });
+
+  uploadRormSubmitButton.addEventListener('keydown', function (evt) {
+    window.util.onEnterPress(evt, (window.backend.save(new FormData(uploadForm), function () {
+      window.util.uploadOverlayHide();
+      uploadImage.classList.remove('hidden');
+    }, window.onPicturesErrorLoad)));
   });
 
   uploadEffectLevel.classList.add('hidden');
@@ -103,12 +104,14 @@
     }
   };
 
-  for (var effect = 0; effect < uploadEffect.length; effect++) {
-    uploadEffect[effect].addEventListener('change', function (evt) {
+  var uploadEffectsArray = [];
+
+  uploadEffectsArray.map.call(uploadEffectInputs, function (it) {
+    it.addEventListener('change', function (evt) {
       window.initializeFilters(evt, effectImagePreview, applyFilter);
       document.removeEventListener('mousedown', onMousePress);
     });
-  }
+  });
 
   var onMousePress = function (evt) {
     var effectLineCoord = getCoords(uploadEffectLevelLine);

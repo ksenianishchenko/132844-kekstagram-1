@@ -12,7 +12,7 @@
     pictureElement.getElementsByTagName('img')[0].src = element.url;
     pictureElement.querySelector('.picture-likes').textContent = element.likes;
     pictureElement.querySelector('.picture-comments').textContent = element.comments.length;
-    pictureElement.addEventListener('click', window.onPictureClickHandler);
+    pictureElement.addEventListener('click', window.galleryOverlay.onClickHandler);
     pictureElement.addEventListener('keydown', window.util.onElementPress);
     return pictureElement;
   };
@@ -24,7 +24,8 @@
 
   var updatePictures = function (array) {
     var fragment = document.createDocumentFragment();
-    for (var i = 0; i < array.length; i++) {
+    var arrayLength = array.length;
+    for (var i = 0; i < arrayLength; i++) {
       fragment.appendChild(renderPictures(array[i]));
     }
     picturesContainer.appendChild(fragment);
